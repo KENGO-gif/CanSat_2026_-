@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS
+      "CanSatState.cpp"
+
+        "MainAction.cpp"
+
+        "ProGram_STANDBY.cpp"
+
+        "ProGram_LANDING.cpp"
+
+        "ProGram_START.cpp"
+        
+        "ProGram_RUN.cpp"
+
+        "ProGram_GOAL.cpp"
+
+        "telemetry.cpp"
+
+    INCLUDE_DIRS "."
+)
