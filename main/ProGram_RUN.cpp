@@ -126,7 +126,7 @@ void NavVector()
 loop_main_RUN()
 {
 
-
+//空いた駅を少し走る
 }
 
 extern "C" void app_main_RUN()
