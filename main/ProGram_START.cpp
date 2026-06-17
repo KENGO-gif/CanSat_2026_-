@@ -37,14 +37,14 @@ void calibrateBodyVector(int n, float coordlatitude, float coordlongtitude)
         if (n <= 0)
         {
             sendTelemetryText("スタック解消不可");
-            sendTelemetryText("終了します");
+            sendTelemetryText("プログラムを終了します");
             return;
         }
         else
         {
             n = n-1;
-            sendTelemetryText("スタック解消動作");
-            stuck();
+            sendTelemetryText("スタック解消動作を行います");
+            Stuck(n, g_coordlatitude, g_coordlongtitude);
             vTaskDelay(pdMS_TO_TICKS(100));
             break;
         }

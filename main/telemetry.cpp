@@ -15,7 +15,7 @@ static bool is_radio_active = false;
 
 typedef struct {
     unsigned long time_stamp;
-    char status[16];
+    char status[200];
 } struct_message;
 
 static void start_esp_now(void)

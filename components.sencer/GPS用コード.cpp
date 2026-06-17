@@ -3,6 +3,8 @@
 #include <cstring>
 #include <cmath>
 #include "driver/uart.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 // UART設定
 constexpr uart_port_t GPS_UART_PORT = UART_NUM_1;
@@ -10,6 +12,11 @@ constexpr gpio_num_t  GPS_TX_PIN    = GPIO_NUM_17;
 constexpr gpio_num_t  GPS_RX_PIN    = GPIO_NUM_16;
 constexpr int         GPS_BAUD_RATE = 9600;
 constexpr int         BUF_SIZE      = 1024;
+
+// グローバル変数（Stuck関数と共有）
+volatile float g_coordlatitude  = 0.0f;
+volatile float g_coordlongtitude = 0.0f;
+portMUX_TYPE gps_mux = portMUX_INITIALIZER_UNLOCKED;
 
 // GPS座標構造体
 struct GpsCoordinate {
@@ -41,7 +48,7 @@ static esp_err_t uart_init() {
     return uart_driver_install(GPS_UART_PORT, BUF_SIZE, 0, 0, nullptr, 0);
 }
 
-// NMEA ddmm.mmmm → 十進度数(decimal degrees)変換
+// NMEA ddmm.mmmm → 十進度数変換
 static double nmea_to_decimal(const char *raw, char direction) {
     if (raw == nullptr || raw[0] == '\0') return 0.0;
 
@@ -58,8 +65,8 @@ static double nmea_to_decimal(const char *raw, char direction) {
 static bool verify_checksum(const char *sentence) {
     if (sentence == nullptr || sentence[0] != '$') return false;
 
-    const char *p     = sentence + 1;
-    const char *star  = strchr(p, '*');
+    const char *p    = sentence + 1;
+    const char *star = strchr(p, '*');
     if (star == nullptr) return false;
 
     uint8_t calc = 0;
@@ -69,7 +76,7 @@ static bool verify_checksum(const char *sentence) {
     return calc == received;
 }
 
-// フィールド切り出し（カンマ区切り）
+// フィールド切り出し
 static const char* get_field(const char *sentence, int index) {
     static char field[32];
     int count = 0;
@@ -87,30 +94,27 @@ static const char* get_field(const char *sentence, int index) {
     return field;
 }
 
-// $GPRMC パース → GpsCoordinateに格納
+// $GPRMC パース
 static bool parse_gprmc(const char *sentence, GpsCoordinate &coord) {
-    // $GPRMC,time,status,lat,N/S,lon,E/W,speed,course,date,magvar,E/W*cs
     if (strncmp(sentence, "$GPRMC", 6) != 0) return false;
     if (!verify_checksum(sentence)) return false;
 
     const char status = get_field(sentence, 2)[0];
-    coord.is_valid = (status == 'A');
+    coord.is_valid    = (status == 'A');
 
     coord.latitude  = nmea_to_decimal(get_field(sentence, 3),
                                       get_field(sentence, 4)[0]);
     coord.longitude = nmea_to_decimal(get_field(sentence, 5),
                                       get_field(sentence, 6)[0]);
 
-    // 速度: ノット → km/h
     coord.speed  = static_cast<float>(atof(get_field(sentence, 7))) * 1.852f;
     coord.course = static_cast<float>(atof(get_field(sentence, 8)));
 
     return true;
 }
 
-// $GPGGA パース → 高度・衛星数を追記
+// $GPGGA パース
 static bool parse_gpgga(const char *sentence, GpsCoordinate &coord) {
-    // $GPGGA,time,lat,N/S,lon,E/W,fix,sats,hdop,alt,M,...*cs
     if (strncmp(sentence, "$GPGGA", 6) != 0) return false;
     if (!verify_checksum(sentence)) return false;
 
@@ -120,7 +124,7 @@ static bool parse_gpgga(const char *sentence, GpsCoordinate &coord) {
     return true;
 }
 
-// UARTからNMEA1行読み取り
+// UART1行読み取り
 static bool read_nmea_line(char *buf, int max_len) {
     int  idx = 0;
     char c   = 0;
@@ -137,40 +141,45 @@ static bool read_nmea_line(char *buf, int max_len) {
     return idx > 0;
 }
 
-// GPS座標取得メイン関数
-esp_err_t getGpsCoordinate(GpsCoordinate &coord) {
+// GPS座標取得
+static esp_err_t getGpsCoordinate(GpsCoordinate &coord) {
     char line[BUF_SIZE];
     bool got_rmc = false;
     bool got_gga = false;
 
-    // RMC と GGA の両方が揃うまで読む
     for (int attempt = 0; attempt < 20; ++attempt) {
         if (!read_nmea_line(line, sizeof(line))) continue;
 
         if (!got_rmc && parse_gprmc(line, coord)) got_rmc = true;
-        if (!got_gga && parse_gpgga(line, coord))  got_gga = true;
+        if (!got_gga && parse_gpgga(line, coord)) got_gga = true;
 
         if (got_rmc && got_gga) return ESP_OK;
     }
     return ESP_ERR_TIMEOUT;
 }
 
-// エントリーポイント
-extern "C" void app_main() {
-    ESP_ERROR_CHECK(uart_init());
-
+// GPSタスク（別タスクとして常時動作）
+void gpsTask(void *pvParameters) {
     GpsCoordinate coord = {};
+
     while (true) {
-        if (getGpsCoordinate(coord) == ESP_OK) {
-            if (coord.is_valid) {
-                printf("Lat: %10.6f  Lon: %11.6f  Alt: %7.1fm  "
-                       "Speed: %5.1fkm/h  Course: %5.1f°  Sats: %d\n",
-                       coord.latitude, coord.longitude, coord.altitude,
-                       coord.speed, coord.course, coord.satellites);
-            } else {
-                printf("測位中... (衛星数: %d)\n", coord.satellites);
-            }
+        if (getGpsCoordinate(coord) == ESP_OK && coord.is_valid) {
+
+            // グローバル変数をmutexで保護して更新
+            taskENTER_CRITICAL(&gps_mux);
+            g_coordlatitude   = static_cast<float>(coord.latitude);
+            g_coordlongtitude = static_cast<float>(coord.longitude);
+            taskEXIT_CRITICAL(&gps_mux);
         }
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
+// エントリーポイント
+extern "C" void app_main() {
+    ESP_ERROR_CHECK(uart_init());
+
+    // GPSタスクを起動
+    xTaskCreate(gpsTask, "gpsTask", 4096, nullptr, 5, nullptr);
+}
+
