@@ -15,9 +15,9 @@ void CanSat_state_logic()
             loop_STANBY();
             break;
 
-            case CanSatState::LANDING:
-            setup_LANDING();
-            loop_LANDING();
+            case CanSatState::FRYING:
+            setup_FRYING();
+            loop_FRYING();
             break;
 
             case CanSatState::START:
@@ -26,6 +26,7 @@ void CanSat_state_logic()
             break;
 
             case CanSatState::RUN:
+            Stuck(int n, float coordlatitude, float coordlongtitude);
             loop_RUN();
             break;
 

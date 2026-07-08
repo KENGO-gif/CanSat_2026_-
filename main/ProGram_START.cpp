@@ -5,31 +5,47 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include <cmath>
+
+float g_bodyEast   = 0.0f;
+float g_bodyNorth  = 0.0f;
+float g_prevYaw    = 0.0f;
+float g_yawOffset  = 0.0f;
+bool  g_calibrated = false;
 
 void setup_START()
 {
     gpio_set_direction((gpio_num_t)PIN_NICROM, GPIO_MODE_OUTPUT);
-
     gpio_set_level((gpio_num_t)PIN_NICROM, 0);
+
+    // 機体前方ベクトル（ワールド座標・ENU）
+    float bodyEast  = 0.0f;
+    float bodyNorth = 0.0f;
+    float prevYaw = 0.0f;  // 前回のIMU Yaw
 }
 
-// 機体前方ベクトル（ワールド座標・ENU）
-float bodyEast  = 0.0f;
-float bodyNorth = 0.0f;
-
-float prevYaw = 0.0f;  // 前回のIMU Yaw
-
-void calibrateBodyVector(int n, float coordlatitude, float coordlongtitude) 
+void calibrateBodyVector(int n) 
 {
     vTaskDelay(pdMS_TO_TICKS(100));
+
+    taskENTER_CRITICAL(&gps_mux);
     float startLat = coordlatitude;
-    float startLan = coordlongtitude;
+    float startLon = coordlongtitude;
+    taskEXIT_CRITICAL(&gps_mux);
 
-    gpio_set_level(GPIO_NUM_25,1);
-    gpio_set_level(GPIO_NUM_32,1); // 絶対包囲測定全身
+    gpio_set_level((gpio_num_t)PIN_RMOTOR_FRONT, 1);
+    gpio_set_level((gpio_num_t)PIN_LMOTOR_FRONT, 1); // 絶対方位測定前進
+    vTaskDelay(pdMS_TO_TICKS(5000));
+    gpio_set_level((gpio_num_t)PIN_RMOTOR_FRONT, 0); 
+    gpio_set_level((gpio_num_t)PIN_LMOTOR_FRONT, 0);
 
-    float dNorth = coordlatitude - startLat;
-    float dEast  = coordlongtitude - startLon;
+    taskENTER_CRITICAL(&gps_mux);
+    float endLat = coordlatitude;
+    float endLon = coordlongtitude;
+    taskEXIT_CRITICAL(&gps_mux);
+
+    float dNorth = endLat - startLat;
+    float dEast  = endLon - startLon;
 
     if(sqrt(dNorth*dNorth + dEast*dEast) < 0.00005f) 
     {
@@ -46,39 +62,39 @@ void calibrateBodyVector(int n, float coordlatitude, float coordlongtitude)
             sendTelemetryText("スタック解消動作を行います");
             Stuck(n, g_coordlatitude, g_coordlongtitude);
             vTaskDelay(pdMS_TO_TICKS(100));
-            break;
+            return;
         }
     }
     // GPS差分から絶対方位を計算
-    float gpsBearing = atan2(dEast, dNorth) * 180.0f / PI;
+    float gpsBearing = atan2(dEast, dNorth) * 180.0f / M_PI;
     yawOffset = gpsBearing - getYaw();
 
     // この時点の機体ベクトルを確定
-    float rad = gpsBearing * PI / 180.0f;
+    float rad = gpsBearing * M_PI / 180.0f;
     bodyEast  = sin(rad);
     bodyNorth = cos(rad);
 
     prevYaw   = getYaw();
     calibrated = true;
 
-    sendTelemetryText("%.2f %.3f %.3f\n",gpsBearing, bodyEast, bodyNorth);
-
+    char BodyVector[64];
+    snprintf(BodyVector, sizeof(BodyVector), "GPS: %.2f, bodyEast: %.2f, bodyNort: %.2f \n"
+            ,gpsBearing, bodyEast, bodyNorth);
+    sendTelemetryText(BodyVector);
 }
 
 void loop_START()
 {
+    int n = 10; //スタック解消の最大試行回数
     sendTelemetryText("ニクロム線起動開始");
-
     gpio_set_level((gpio_num_t)PIN_NICROM, 1);
-
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
+    vTaskDelay(pdMS_TO_TICKS(1500));
     gpio_set_level((gpio_num_t)PIN_NICROM, 0);
-
     sendTelemetryText("ニクロム線起動完了");
-    sendTelemetryText("GOALに移行します");
+    sendTelemetryText("これより機体ベクトル算出動作を行います");
+    calibrateBodyVector(n);
 
+    sendTelemetryText("STATEをRUNに移行します");
     currentState = CanSatState::RUN;
-
     return;
 }

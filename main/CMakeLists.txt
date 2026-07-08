@@ -6,7 +6,7 @@ idf_component_register(
 
         "ProGram_STANDBY.cpp"
 
-        "ProGram_LANDING.cpp"
+        "ProGram_FRYING.cpp"
 
         "ProGram_START.cpp"
         
