@@ -8,7 +8,9 @@
 
 void loop_GOAL()
 {
+  while(true)
+  {
     sendTelemetryText("CanSat GOAL!!!");
     vTaskDelay(pdMS_TO_TICKS(1000));
-
+  }
 }

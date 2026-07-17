@@ -3,8 +3,6 @@
 #include "CanSat_EachFileConnect.hpp"
 #include "PIN_WIRE.hpp"
 #include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 void loop_STANBY()
 {
