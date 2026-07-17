@@ -5,11 +5,13 @@
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "CanSat_EachFileConnect.hpp"
+#include "PIN_WIRE.hpp"
 
-// UART設定
+// UART設定（PIN_WIRE.hppのGPS用ピン割り当てに準拠）
 constexpr uart_port_t GPS_UART_PORT = UART_NUM_1;
-constexpr gpio_num_t  GPS_TX_PIN    = GPIO_NUM_17;
-constexpr gpio_num_t  GPS_RX_PIN    = GPIO_NUM_16;
+constexpr gpio_num_t  GPS_TX_PIN    = TXD_PIN_GPS;
+constexpr gpio_num_t  GPS_RX_PIN    = RXD_PIN_GPS;
 constexpr int         GPS_BAUD_RATE = 9600;
 constexpr int         BUF_SIZE      = 1024;
 
@@ -170,16 +172,18 @@ void gpsTask(void *pvParameters) {
             g_coordlatitude   = static_cast<float>(coord.latitude);
             g_coordlongtitude = static_cast<float>(coord.longitude);
             taskEXIT_CRITICAL(&gps_mux);
+
+            // 地上局へGPSテレメトリを送信（ESP-NOW経由、telemetry.cppに委譲）
+            sendGpsTelemetry(coord.satellites, coord.latitude,
+                             coord.longitude, coord.altitude);
         }
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
-// エントリーポイント
-extern "C" void app_main() {
+// GPSタスク起動（main側のapp_mainから呼び出す）
+void startGpsTask() {
     ESP_ERROR_CHECK(uart_init());
-
-    // GPSタスクを起動
     xTaskCreate(gpsTask, "gpsTask", 4096, nullptr, 5, nullptr);
 }
 

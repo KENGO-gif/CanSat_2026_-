@@ -16,5 +16,7 @@ idf_component_register(
 
         "telemetry.cpp"
 
+        "../components.sencer/GPS用コード.cpp"
+
     INCLUDE_DIRS "."
 )

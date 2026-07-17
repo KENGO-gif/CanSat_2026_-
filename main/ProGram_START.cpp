@@ -29,8 +29,8 @@ void calibrateBodyVector(int n)
     vTaskDelay(pdMS_TO_TICKS(100));
 
     taskENTER_CRITICAL(&gps_mux);
-    float startLat = coordlatitude;
-    float startLon = coordlongtitude;
+    float startLat = g_coordlatitude;
+    float startLon = g_coordlongtitude;
     taskEXIT_CRITICAL(&gps_mux);
 
     gpio_set_level((gpio_num_t)PIN_RMOTOR_FRONT, 1);
@@ -40,8 +40,8 @@ void calibrateBodyVector(int n)
     gpio_set_level((gpio_num_t)PIN_LMOTOR_FRONT, 0);
 
     taskENTER_CRITICAL(&gps_mux);
-    float endLat = coordlatitude;
-    float endLon = coordlongtitude;
+    float endLat = g_coordlatitude;
+    float endLon = g_coordlongtitude;
     taskEXIT_CRITICAL(&gps_mux);
 
     float dNorth = endLat - startLat;

@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <cstdint>
+#include "freertos/FreeRTOS.h"
+
 enum class CanSatState
 {
     STANDBY,
@@ -18,6 +21,14 @@ extern AccelData g_accel;
 void updateAccel();
 
 void sendTelemetryText(const char* text);
+void sendGpsTelemetry(uint8_t satellites, double latitude, double longitude, float altitude);
+void setTelemetryChannel(uint8_t channel);
+
+// ---- GPS用コード.cpp ----
+extern volatile float g_coordlatitude;
+extern volatile float g_coordlongtitude;
+extern portMUX_TYPE gps_mux;
+void startGpsTask();
 
 // ---- CanSatState.cpp ----
 extern CanSatState currentState;

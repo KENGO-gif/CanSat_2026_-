@@ -10,6 +10,7 @@
 
 extern "C" void app_main(void)
 {
+    startGpsTask();
     CanSat_state_logic();
 }
 
