@@ -8,8 +8,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+extern void initImu(); // 九軸センサー専用コード.cpp（現状CanSat_EachFileConnect.hpp未登録のためここで宣言）
+
 extern "C" void app_main(void)
 {
+    initImu();
     startGpsTask();
     CanSat_state_logic();
 }

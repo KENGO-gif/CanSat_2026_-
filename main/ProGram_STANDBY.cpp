@@ -3,13 +3,15 @@
 #include "CanSat_EachFileConnect.hpp"
 #include "PIN_WIRE.hpp"
 #include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 void loop_STANBY()
 {
     gpio_set_direction((gpio_num_t)RXD_PIN_S3sense, GPIO_MODE_INPUT);
     gpio_set_direction((gpio_num_t)TXD_PIN_S3sense, GPIO_MODE_OUTPUT);
 
-    int pinState = gpio_get_level((gpio_num_t)RXD_PIN_Zero2W);
+    int pinState = gpio_get_level((gpio_num_t)RXD_PIN_S3sense);
 
     if(pinState == 1)
     {
@@ -17,10 +19,10 @@ void loop_STANBY()
         {
             char msg[64];
             snprintf(msg, sizeof(msg), "画像認識検知成功: %d回", i);
-            sendTelemetryText("msg");
+            sendTelemetryText(msg);
             vTaskDelay(pdMS_TO_TICKS(100));
         }
-        sendTelemetryText("画像認識検知成功10回")
+        sendTelemetryText("画像認識検知成功10回");
         sendTelemetryText("画像認識をスタンバイモードに移行します");
         gpio_set_level(TXD_PIN_S3sense, 1);
         sendTelemetryText("FRYINGに移行します");

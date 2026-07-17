@@ -7,6 +7,8 @@
 #include "freertos/task.h"
 #include <cmath>
 
+extern float getYaw(); // 九軸センサー専用コード.cpp（現状CMakeLists未登録、別途要修正）
+
 float g_bodyEast   = 0.0f;
 float g_bodyNorth  = 0.0f;
 float g_prevYaw    = 0.0f;
@@ -19,9 +21,9 @@ void setup_START()
     gpio_set_level((gpio_num_t)PIN_NICROM, 0);
 
     // 機体前方ベクトル（ワールド座標・ENU）
-    float bodyEast  = 0.0f;
-    float bodyNorth = 0.0f;
-    float prevYaw = 0.0f;  // 前回のIMU Yaw
+    g_bodyEast  = 0.0f;
+    g_bodyNorth = 0.0f;
+    g_prevYaw   = 0.0f;  // 前回のIMU Yaw
 }
 
 void calibrateBodyVector(int n) 
@@ -67,19 +69,19 @@ void calibrateBodyVector(int n)
     }
     // GPS差分から絶対方位を計算
     float gpsBearing = atan2(dEast, dNorth) * 180.0f / M_PI;
-    yawOffset = gpsBearing - getYaw();
+    g_yawOffset = gpsBearing - getYaw();
 
     // この時点の機体ベクトルを確定
     float rad = gpsBearing * M_PI / 180.0f;
-    bodyEast  = sin(rad);
-    bodyNorth = cos(rad);
+    g_bodyEast  = sin(rad);
+    g_bodyNorth = cos(rad);
 
-    prevYaw   = getYaw();
-    calibrated = true;
+    g_prevYaw   = getYaw();
+    g_calibrated = true;
 
     char BodyVector[64];
     snprintf(BodyVector, sizeof(BodyVector), "GPS: %.2f, bodyEast: %.2f, bodyNort: %.2f \n"
-            ,gpsBearing, bodyEast, bodyNorth);
+            ,gpsBearing, g_bodyEast, g_bodyNorth);
     sendTelemetryText(BodyVector);
 }
 

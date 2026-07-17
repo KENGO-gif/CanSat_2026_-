@@ -18,5 +18,7 @@ idf_component_register(
 
         "../components.sencer/GPS用コード.cpp"
 
+        "../components.sencer/九軸センサー専用コード.cpp"
+
     INCLUDE_DIRS "."
 )

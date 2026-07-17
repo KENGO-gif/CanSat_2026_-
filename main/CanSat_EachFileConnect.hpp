@@ -47,7 +47,7 @@ void loop_START();
 
 // ---- ProGram_RUN.cpp ----
 void Stuck(int n, float coordlatitude, float coordlongtitude);
-void Cul_NAVVec(const Vec2 Target, const Vec2 Here);
+void Cul_NAVVec();
 void NavVector();
 
 // ---- ProGram_GOAL.cpp ----

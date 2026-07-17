@@ -3,6 +3,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+extern void loop_main_RUN(); // ProGram_RUN.cpp（未だCanSat_EachFileConnect.hppに未登録のためここで宣言）
+
 CanSatState currentState = CanSatState::STANDBY;
 
 void CanSat_state_logic()
@@ -26,8 +28,7 @@ void CanSat_state_logic()
             break;
 
             case CanSatState::RUN:
-            Stuck(int n, float coordlatitude, float coordlongtitude);
-            loop_RUN();
+            loop_main_RUN();
             break;
 
             case CanSatState::GOAL:

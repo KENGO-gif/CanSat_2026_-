@@ -2,6 +2,8 @@
 #include "PIN_WIRE.hpp"                 // .cpp → .hppに修正(右側のファイル)
 #include "driver/i2c_master.h"
 #include "driver/i2c.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include <cstdint>
 #include <cstdio>
 #include <cmath>
@@ -73,8 +75,8 @@ float getYaw() {
 }
 
 // ---- 加速度データ ----
-struct AccelData { float x, y, z; };
-AccelData g_accel;                                       // 他ファイルからも使うならextern化してヘッダーに宣言
+// AccelData構造体・g_accelはCanSat_EachFileConnect.hppで宣言済みのためここでは実体定義のみ行う
+AccelData g_accel;
 portMUX_TYPE accel_mux = portMUX_INITIALIZER_UNLOCKED;    // 排他制御用
 
 // 加速度取得・更新(単位: m/s^2)
@@ -95,17 +97,9 @@ void updateAccel() {
     taskEXIT_CRITICAL(&accel_mux);
 }
 
-extern "C" void app_main() {
+// 実際のapp_main()はmain/MainAction.cppに一本化されているため、
+// このファイルではi2cInit()/bnoInit()の初期化呼び出しを提供するのみとする。
+void initImu() {
     i2cInit();
     bnoInit();
-
-    while (1) {
-        float yaw = getYaw();
-        updateAccel();
-
-        printf("Yaw: %.2f deg | Accel: %.2f, %.2f, %.2f m/s^2\n",
-               yaw, g_accel.x, g_accel.y, g_accel.z);
-
-        vTaskDelay(pdMS_TO_TICKS(20));
-    }
 }
