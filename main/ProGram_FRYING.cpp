@@ -11,14 +11,15 @@ void setup_FRYING()
 {
     gpio_set_direction((gpio_num_t)FALLOUT_PIN_BLUP, GPIO_MODE_OUTPUT);
     gpio_set_direction((gpio_num_t)FALLOUT_PIN_GND, GPIO_MODE_INPUT);
+    gpio_set_pull_mode((gpio_num_t)FALLOUT_PIN_GND, GPIO_PULLDOWN_ONLY);
     gpio_set_level((gpio_num_t)FALLOUT_PIN_BLUP, 1);
 }
 
 void loop_FRYING()
 {
     int fallpinState = gpio_get_level((gpio_num_t)FALLOUT_PIN_GND);
-    
-    if(fallpinState == 0)
+
+    if(fallpinState == 1)
     {
         int64_t startTime = esp_timer_get_time();
         sendTelemetryText("ピン抜け検知");
@@ -39,7 +40,7 @@ void loop_FRYING()
             currentState = CanSatState::START;
         }
 
-        else if((esp_timer_get_time() - startTime) < 20000000 && (g_accel.z >= 3.0) )
+        else if((esp_timer_get_time() - startTime) < 20000000 && (g_accel.z <= -150.0) )
         {
             sendTelemetryText("落下衝撃を検知しました");
             vTaskDelay(pdMS_TO_TICKS(5000));

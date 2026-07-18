@@ -20,6 +20,15 @@ void setup_START()
     gpio_set_direction((gpio_num_t)PIN_NICROM, GPIO_MODE_OUTPUT);
     gpio_set_level((gpio_num_t)PIN_NICROM, 0);
 
+    gpio_set_direction((gpio_num_t)PIN_RMOTOR_FRONT, GPIO_MODE_OUTPUT);
+    gpio_set_direction((gpio_num_t)PIN_RMOTOR_BACK, GPIO_MODE_OUTPUT);
+    gpio_set_direction((gpio_num_t)PIN_LMOTOR_FRONT, GPIO_MODE_OUTPUT);
+    gpio_set_direction((gpio_num_t)PIN_LMOTOR_BACK, GPIO_MODE_OUTPUT);
+    gpio_set_level((gpio_num_t)PIN_RMOTOR_FRONT, 0);
+    gpio_set_level((gpio_num_t)PIN_RMOTOR_BACK, 0);
+    gpio_set_level((gpio_num_t)PIN_LMOTOR_FRONT, 0);
+    gpio_set_level((gpio_num_t)PIN_LMOTOR_BACK, 0);
+
     // 機体前方ベクトル（ワールド座標・ENU）
     g_bodyEast  = 0.0f;
     g_bodyNorth = 0.0f;

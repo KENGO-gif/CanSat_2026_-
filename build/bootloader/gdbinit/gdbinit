@@ -1,0 +1,2 @@
+source /Users/kengotanaka/Documents/GitHub/CanSat_2026/build/bootloader/gdbinit/symbols
+source /Users/kengotanaka/Documents/GitHub/CanSat_2026/build/bootloader/gdbinit/connect

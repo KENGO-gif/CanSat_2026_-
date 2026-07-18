@@ -13,10 +13,10 @@
 #include "freertos/task.h"
 
 static const char *TAG = "ESP_NOW_SENDER";
-static uint8_t broadcast_address[] = {0x68, 0x25, 0xDD, 0xBB, 0x51, 0x90};
+static uint8_t broadcast_address[] = {0x34, 0x5f, 0x45, 0x38, 0xd7, 0xa4};
 static bool is_radio_active = false;
 static uint8_t current_channel = 1;
-
+// 34:5F:45:38:D7:A4 (受信機のMACアドレス控え)
 typedef struct {
     unsigned long time_stamp;
     char status[200];
