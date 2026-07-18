@@ -44,6 +44,8 @@ void calibrateBodyVector(int n)
     float startLon = g_coordlongtitude;
     taskEXIT_CRITICAL(&gps_mux);
 
+
+    sendTelemetryText("前進します")
     gpio_set_level((gpio_num_t)PIN_RMOTOR_FRONT, 1);
     gpio_set_level((gpio_num_t)PIN_LMOTOR_FRONT, 1); // 絶対方位測定前進
     vTaskDelay(pdMS_TO_TICKS(5000));
