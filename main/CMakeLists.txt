@@ -21,4 +21,6 @@ idf_component_register(
         "../components.sencer/九軸センサー専用コード.cpp"
 
     INCLUDE_DIRS "."
+    REQUIRES driver esp_event esp_netif esp_timer esp_wifi nvs_flash
+             arduino-esp32 Adafruit_Sensor Adafruit_BNO055 Adafruit_BusIO
 )

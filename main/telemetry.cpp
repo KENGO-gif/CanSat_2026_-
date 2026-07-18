@@ -16,6 +16,8 @@ static const char *TAG = "ESP_NOW_SENDER";
 static uint8_t broadcast_address[] = {0x34, 0x5f, 0x45, 0x38, 0xd7, 0xa4};
 static bool is_radio_active = false;
 static uint8_t current_channel = 1;
+static bool esp_now_init_started = false; // gpsTaskとメインループの二重初期化防止用
+static portMUX_TYPE init_mux = portMUX_INITIALIZER_UNLOCKED;
 // 34:5F:45:38:D7:A4 (受信機のMACアドレス控え)
 typedef struct {
     unsigned long time_stamp;
@@ -89,6 +91,26 @@ static void start_esp_now(void)
     is_radio_active = true;
 }
 
+// gpsTaskとメインループが同時に初回送信しても start_esp_now() が二重に走らないようにする
+static void ensure_esp_now_started(void)
+{
+    bool need_init = false;
+    taskENTER_CRITICAL(&init_mux);
+    if (!esp_now_init_started) {
+        esp_now_init_started = true;
+        need_init = true;
+    }
+    taskEXIT_CRITICAL(&init_mux);
+
+    if (need_init) {
+        start_esp_now();
+    } else {
+        while (!is_radio_active) {
+            vTaskDelay(pdMS_TO_TICKS(1));
+        }
+    }
+}
+
 void setTelemetryChannel(uint8_t channel)
 {
     if (channel < 1 || channel > 13) return;
@@ -101,7 +123,7 @@ void setTelemetryChannel(uint8_t channel)
 
 void sendTelemetryText(const char *text)
 {
-    if (!is_radio_active) start_esp_now();
+    ensure_esp_now_started();
 
     struct_message tx = {};
     tx.time_stamp = (unsigned long)(esp_timer_get_time() / 1000ULL);
@@ -120,7 +142,7 @@ void sendTelemetryText(const char *text)
 // ★コード2のloop()内送信部相当（GPS用コード.cppのgpsTaskから毎周期呼ばれる）
 void sendGpsTelemetry(uint8_t satellites, double latitude, double longitude, float altitude)
 {
-    if (!is_radio_active) start_esp_now();
+    ensure_esp_now_started();
 
     gps_message tx = {};
     tx.channel    = current_channel;

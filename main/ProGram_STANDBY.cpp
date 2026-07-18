@@ -22,8 +22,11 @@ void loop_STANBY()
         }
         sendTelemetryText("画像認識検知成功10回");
         sendTelemetryText("画像認識をスタンバイモードに移行します");
+        sendTelemetryText("GPS取得されるまで、5分間待機します");
+        vTaskDelay(pdMS_TO_TICKS(10000));
         gpio_set_level(TXD_PIN_S3sense, 1);
         sendTelemetryText("FRYINGに移行します");
+        
         currentState = CanSatState::FRYING;
         return;
     }

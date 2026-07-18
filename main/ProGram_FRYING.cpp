@@ -9,22 +9,21 @@
 
 void setup_FRYING()
 {
-    gpio_set_direction((gpio_num_t)FALLOUT_PIN_BLUP, GPIO_MODE_OUTPUT);
-    gpio_set_direction((gpio_num_t)FALLOUT_PIN_GND, GPIO_MODE_INPUT);
-    gpio_set_pull_mode((gpio_num_t)FALLOUT_PIN_GND, GPIO_PULLDOWN_ONLY);
-    gpio_set_level((gpio_num_t)FALLOUT_PIN_BLUP, 1);
+    gpio_set_direction((gpio_num_t)FALLOUT_PIN_BLUP, GPIO_MODE_INPUT);
+    gpio_set_direction((gpio_num_t)FALLOUT_PIN_GND, GPIO_MODE_OUTPUT);
+    gpio_set_pull_mode((gpio_num_t)FALLOUT_PIN_BLUP, GPIO_PULLUP_ONLY);
 }
 
 void loop_FRYING()
 {
-    int fallpinState = gpio_get_level((gpio_num_t)FALLOUT_PIN_GND);
+    int fallpinState = gpio_get_level((gpio_num_t)FALLOUT_PIN_BLUP);
 
     if(fallpinState == 1)
     {
         int64_t startTime = esp_timer_get_time();
         sendTelemetryText("ピン抜け検知");
 
-        while((esp_timer_get_time() - startTime) < 20000000 && (g_accel.z < 3.0))
+        while((esp_timer_get_time() - startTime) < 2000000 && (g_accel.z < 30.0))
         {
             updateAccel();
             char ACCEL[64];
@@ -34,13 +33,13 @@ void loop_FRYING()
             vTaskDelay(pdMS_TO_TICKS(100));
         }
 
-        if((esp_timer_get_time() - startTime) >= 20000000)
+        if((esp_timer_get_time() - startTime) >= 2000000)
         {
             sendTelemetryText("タイムアウトよりSTATEをSTARTに強制移行します");
             currentState = CanSatState::START;
         }
 
-        else if((esp_timer_get_time() - startTime) < 20000000 && (g_accel.z <= -150.0) )
+        else if((esp_timer_get_time() - startTime) < 2000000 && (g_accel.z >= 30.0) )
         {
             sendTelemetryText("落下衝撃を検知しました");
             vTaskDelay(pdMS_TO_TICKS(5000));

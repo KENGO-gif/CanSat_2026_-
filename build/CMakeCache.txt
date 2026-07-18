@@ -14,6 +14,9 @@
 # EXTERNAL cache entries
 ########################
 
+//No help, variable specified on the command line.
+CCACHE_ENABLE:UNINITIALIZED=False
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/Users/kengotanaka/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/bin/xtensa-esp32-elf-addr2line
 
@@ -366,6 +369,9 @@ Mbed TLS_IS_TOP_LEVEL:STATIC=OFF
 Mbed TLS_SOURCE_DIR:STATIC=/Users/kengotanaka/Documents/esp_work/ESP-IDF.5.18.v6/.espressif/v6.0.1/esp-idf/components/mbedtls/mbedtls
 
 //No help, variable specified on the command line.
+PYTHON:UNINITIALIZED=/Users/kengotanaka/.espressif/python_env/idf6.0_py3.14_env/bin/python
+
+//No help, variable specified on the command line.
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
 
 //Value Computed by CMake
@@ -579,7 +585,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=157
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=176
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -629,7 +635,7 @@ C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS:INTERNAL=1
 //Details about finding Git
 FIND_PACKAGE_MESSAGE_DETAILS_Git:INTERNAL=[/opt/homebrew/bin/git][v2.54.0()]
 //Details about finding Python3
-FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/Users/kengotanaka/.espressif/tools/python/v6.0.1/venv/bin/python][found components: Interpreter ][v3.14.6()]
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/Users/kengotanaka/.espressif/python_env/idf6.0_py3.14_env/bin/python][found components: Interpreter ][v3.14.6()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //ADVANCED property for variable: GIT_EXECUTABLE
@@ -640,10 +646,10 @@ _GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/usr/local
 _Python3_Compiler_REASON_FAILURE:INTERNAL=
 //Development reason failure
 _Python3_Development_REASON_FAILURE:INTERNAL=
-_Python3_EXECUTABLE:INTERNAL=/Users/kengotanaka/.espressif/tools/python/v6.0.1/venv/bin/python
+_Python3_EXECUTABLE:INTERNAL=/Users/kengotanaka/.espressif/python_env/idf6.0_py3.14_env/bin/python
 //Python3 Properties
-_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;14;6;32;64;;;abi3;/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14;/Users/kengotanaka/.espressif/tools/python/v6.0.1/venv/lib/python3.14;/Users/kengotanaka/.espressif/tools/python/v6.0.1/venv/lib/python3.14/site-packages;/Users/kengotanaka/.espressif/tools/python/v6.0.1/venv/lib/python3.14/site-packages
-_Python3_INTERPRETER_SIGNATURE:INTERNAL=1ebe1a152215dfa319c2f4476b64404f
+_Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;14;6;32;64;;;abi3;/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/lib/python3.14;/Users/kengotanaka/.espressif/python_env/idf6.0_py3.14_env/lib/python3.14;/Users/kengotanaka/.espressif/python_env/idf6.0_py3.14_env/lib/python3.14/site-packages;/Users/kengotanaka/.espressif/python_env/idf6.0_py3.14_env/lib/python3.14/site-packages
+_Python3_INTERPRETER_SIGNATURE:INTERNAL=b602c589a700ba7e951e7fe32a6f3d7d
 //NumPy reason failure
 _Python3_NumPy_REASON_FAILURE:INTERNAL=
 

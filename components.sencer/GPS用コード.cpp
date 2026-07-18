@@ -5,8 +5,12 @@
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_log.h"
+#include "esp_timer.h"
 #include "CanSat_EachFileConnect.hpp"
 #include "PIN_WIRE.hpp"
+
+static const char *TAG = "GPS";
 
 // UART設定（PIN_WIRE.hppのGPS用ピン割り当てに準拠）
 constexpr uart_port_t GPS_UART_PORT = UART_NUM_1;
@@ -163,20 +167,42 @@ static esp_err_t getGpsCoordinate(GpsCoordinate &coord) {
 // GPSタスク（別タスクとして常時動作）
 void gpsTask(void *pvParameters) {
     GpsCoordinate coord = {};
+    int64_t last_fix_time_us = 0;
 
     while (true) {
-        if (getGpsCoordinate(coord) == ESP_OK && coord.is_valid) {
+        esp_err_t result = getGpsCoordinate(coord);
 
+        if (result == ESP_OK && coord.is_valid) {
             // グローバル変数をmutexで保護して更新
             taskENTER_CRITICAL(&gps_mux);
             g_coordlatitude   = static_cast<float>(coord.latitude);
             g_coordlongtitude = static_cast<float>(coord.longitude);
             taskEXIT_CRITICAL(&gps_mux);
 
+            // USBシリアルモニタへ移動中の座標をリアルタイム表示
+            int64_t now_us = esp_timer_get_time();
+            float dt_s = (last_fix_time_us == 0)
+                             ? 0.0f
+                             : (now_us - last_fix_time_us) / 1000000.0f;
+            last_fix_time_us = now_us;
+
+            ESP_LOGI(TAG,
+                     "FIX  sat=%u lat=%.6f lon=%.6f alt=%.1fm speed=%.1fkm/h course=%.1fdeg (dt=%.2fs)",
+                     coord.satellites, coord.latitude, coord.longitude,
+                     coord.altitude, coord.speed, coord.course, dt_s);
+
             // 地上局へGPSテレメトリを送信（ESP-NOW経由、telemetry.cppに委譲）
             sendGpsTelemetry(coord.satellites, coord.latitude,
                              coord.longitude, coord.altitude);
+        } else if (result == ESP_OK && !coord.is_valid) {
+            // NMEA文は取れているが測位が確定していない（屋内・起動直後など）
+            ESP_LOGW(TAG, "NO FIX  sat=%u (waiting for position lock)",
+                     coord.satellites);
+        } else {
+            // NMEA文自体を一定時間受信できなかった（配線・電源・ボーレート異常の疑い）
+            ESP_LOGE(TAG, "No NMEA data from GPS module (check wiring/baud rate)");
         }
+
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

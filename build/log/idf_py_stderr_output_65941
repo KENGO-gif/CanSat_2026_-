@@ -1,0 +1,19 @@
+Command: cmake -G Ninja -B /Users/kengotanaka/Documents/GitHub/CanSat_2026/build -DPYTHON_DEPS_CHECKED=1 -DPYTHON=/Users/kengotanaka/.espressif/python_env/idf6.0_py3.14_env/bin/python -DESP_PLATFORM=1 -DCCACHE_ENABLE=False /Users/kengotanaka/Documents/GitHub/CanSat_2026
+info: Default value for FREERTOS_HZ in sdkconfig is 1000 but it is 100 according to Kconfig.
+Using default value from sdkconfig (1000).
+Configuration Report                                                            
+ ────────────────────────────────────────────────────────────────────────────── 
+   Parser Version: 1                                                            
+   Verbosity: default                                                           
+   Defaults policy: sdkconfig                                                   
+   Status: Finished with notifications                                          
+                                                                                
+  Default Value Mismatch                                                        
+   ──────────────────────────────────────────────────────────────────────────   
+    Using sdkconfig default values                                              
+    Config symbols with different default value between sdkconfig and           
+    Kconfig                                                                     
+    FREERTOS_HZ: Kconfig default value: 100, sdkconfig default value:           
+    1000                                                                        
+   ──────────────────────────────────────────────────────────────────────────   
+ ────────────────────────────────────────────────────────────────────────────── 

@@ -4,3 +4,4 @@ source "/Users/kengotanaka/Documents/esp_work/ESP-IDF.5.18.v6/.espressif/v6.0.1/
 source "/Users/kengotanaka/Documents/esp_work/ESP-IDF.5.18.v6/.espressif/v6.0.1/esp-idf/components/esp_rom/Kconfig.projbuild"
 source "/Users/kengotanaka/Documents/esp_work/ESP-IDF.5.18.v6/.espressif/v6.0.1/esp-idf/components/esptool_py/Kconfig.projbuild"
 source "/Users/kengotanaka/Documents/esp_work/ESP-IDF.5.18.v6/.espressif/v6.0.1/esp-idf/components/partition_table/Kconfig.projbuild"
+source "/Users/kengotanaka/Documents/GitHub/CanSat_2026/managed_components/espressif__arduino-esp32/Kconfig.projbuild"

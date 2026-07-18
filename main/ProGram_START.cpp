@@ -18,7 +18,6 @@ bool  g_calibrated = false;
 void setup_START()
 {
     gpio_set_direction((gpio_num_t)PIN_NICROM, GPIO_MODE_OUTPUT);
-    gpio_set_level((gpio_num_t)PIN_NICROM, 0);
 
     gpio_set_direction((gpio_num_t)PIN_RMOTOR_FRONT, GPIO_MODE_OUTPUT);
     gpio_set_direction((gpio_num_t)PIN_RMOTOR_BACK, GPIO_MODE_OUTPUT);
@@ -45,7 +44,7 @@ void calibrateBodyVector(int n)
     taskEXIT_CRITICAL(&gps_mux);
 
 
-    sendTelemetryText("前進します")
+    sendTelemetryText("前進します");
     gpio_set_level((gpio_num_t)PIN_RMOTOR_FRONT, 1);
     gpio_set_level((gpio_num_t)PIN_LMOTOR_FRONT, 1); // 絶対方位測定前進
     vTaskDelay(pdMS_TO_TICKS(5000));
