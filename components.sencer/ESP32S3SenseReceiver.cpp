@@ -17,5 +17,6 @@ void Gazouhantei()
         {
             ESP32S3 = false;
         }
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

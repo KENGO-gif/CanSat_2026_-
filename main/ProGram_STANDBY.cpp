@@ -30,7 +30,7 @@ void loop_STANBY()
         currentState = CanSatState::FRYING;
         return;
     }
-    else
+    else 
     {
         sendTelemetryText("画像認識検知なし");
         sendTelemetryText("ROG準備中待機");

@@ -35,6 +35,6 @@ void CanSat_state_logic()
             loop_GOAL();
             break;
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

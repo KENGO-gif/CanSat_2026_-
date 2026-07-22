@@ -242,9 +242,6 @@ void loop_main_RUN()
         }
         else
         {
-                Cul_NAVVec();
-            LotateCul();
-            loop_Make_Body_lotate();
                 taskENTER_CRITICAL(&gps_mux);
                 float before_Lat = g_coordlatitude;
                 float before_Lon = g_coordlongtitude;
@@ -268,7 +265,7 @@ void loop_main_RUN()
             }
         }
     }
-    if (ESP32S3 == false && DistanceABS < 3.0)
+    if (ESP32S3 == false && DistanceNumberABS < 3.0)
     {
         sendTelemetryText("コーンを捜索し検知する動作を開始します");
         while (ESP32S3 == false)
@@ -276,41 +273,6 @@ void loop_main_RUN()
             gpio_set_level(PIN_RMOTOR_BACK,1);
             gpio_set_level(PIN_LMOTOR_FRONT,1);
             vTaskDelay(pdMS_TO_TICKS(100));
-        }
-        if (ESP32S3 == true)
-        {
-            if (DistanceNumberABS < 1.0)
-            {
-             sendTelemetryText("ゴールに到着しました.STATEをGOALに移行します");
-             currentState = CanSatState::GOAL;
-            }
-            else
-            {
-                Cul_NAVVec();
-                LotateCul();
-                loop_Make_Body_lotate();
-                    taskENTER_CRITICAL(&gps_mux);
-                    float before_Lat = g_coordlatitude;
-                    float before_Lon = g_coordlongtitude;
-                    taskEXIT_CRITICAL(&gps_mux);
-                gpio_set_level(PIN_RMOTOR_FRONT,1);
-                gpio_set_level(PIN_RMOTOR_BACK,1);
-                vTaskDelay(pdMS_TO_TICKS(1000));
-                    taskENTER_CRITICAL(&gps_mux);
-                    float after_Lat = g_coordlatitude;
-                    float after_Lon = g_coordlongtitude;
-                    taskEXIT_CRITICAL(&gps_mux);
-                    float distance_RUNNowANDThenLon = std::abs(after_Lat - before_Lat);
-                    float distance_RUNNowANDThenLat = std::abs(after_Lon - before_Lon);
-                    DistanceABS = sqrt(distance_RUNNowANDThenLat*distance_RUNNowANDThenLat
-                    + distance_RUNNowANDThenLon*distance_RUNNowANDThenLon);
-                DistanceToGoal();
-                    if (DistanceABS < 0.5)
-                {
-                    sendTelemetryText("スタックしています。スタック解消動作を行います");
-                    Stuck(STUCK_RETRY_MAX, g_coordlatitude, g_coordlongtitude);
-                }
-            }
         }
     }
 }
